@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D Unique Website</title>
+    <style>
+      :root {
+        --bg0: #070A12;
+        --bg1: #0B1530;
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.7);
+        --accent: #7C3AED;
+        --accent2: #22D3EE;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(1200px 800px at 20% 10%, var(--bg1), var(--bg0));
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        overflow: hidden;
+      }
+
+      /* Canvas behind UI */
+      #stage {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        z-index: 0;
+      }
+
+      /* Top overlay */
+      header {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        width: min(1100px, calc(100vw - 28px));
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        pointer-events: none;
+      }
+
+      .brand {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+      .logo {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18), 0 0 22px rgba(34, 211, 238, 0.25);
+      }
+      .brand strong {
+        font-size: 13px;
+        letter-spacing: 0.2px;
+      }
+
+      nav {
+        pointer-events: auto;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      nav a {
+        text-decoration: none;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        transition: transform 160ms ease, border-color 160ms ease, color 160ms ease;
+      }
+      nav a:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      /* Hero text */
+      .hero {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        width: min(1100px, calc(100vw - 28px));
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 22px;
+        align-items: center;
+        pointer-events: none;
+      }
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+          top: 52%;
+        }
+      }
+
+      .copy {
+        pointer-events: auto;
+        padding: 18px 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+      }
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(124, 58, 237, 0.14);
+        border: 1px solid rgba(124, 58, 237, 0.35);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12px;
+        letter-spacing: 0.4px;
+      }
+      .kicker .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.28);
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(30px, 4.2vw, 54px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+      .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.6;
+        max-width: 58ch;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .btn {
+        pointer-events: auto;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.92);
+        border-radius: 14px;
+        padding: 12px 14px;
+        cursor: pointer;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .btn.primary {
+        border-color: rgba(124, 58, 237, 0.4);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28), rgba(34, 211, 238, 0.14));
+      }
+
+      .arrow {
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        position: relative;
+      }
+      .arrow:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid rgba(255, 255, 255, 0.85);
+        border-top: 2px solid rgba(255, 255, 255, 0.85);
+        transform: rotate(45deg);
+        right: 2px;
+        top: 5px;
+      }
+
+      .panel {
+        pointer-events: auto;
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(14px);
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.86);
+        letter-spacing: 0.2px;
+      }
+      .chips {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.86);
+        padding: 9px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .hint {
+        margin-top: 14px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 1.5;
+      }
+
+      .footer {
+        position: fixed;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        z-index: 2;
+        width: min(1100px, calc(100vw - 28px));
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12px;
+        pointer-events: none;
+      }
+      .pill {
+        pointer-events: auto;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        * { scroll-behavior: auto !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+
+    <header>
+      <div class="brand" aria-label="Site brand">
+        <span class="logo" aria-hidden="true"></span>
+        <strong>NEBULA FORGE</strong>
+      </div>
+      <nav aria-label="Primary navigation">
+        <a href="#features">Features</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <section class="copy">
+        <div class="kicker"><span class="dot" aria-hidden="true"></span> 3D • Unique • Professional</div>
+        <h1>Move your cursor. Watch the world respond.</h1>
+        <p class="sub">
+          A premium 3D landing experience built with real-time WebGL visuals, depth, lighting, and
+          smooth interaction—designed to feel fast, modern, and distinctive.
+        </p>
+        <div class="actions">
+          <button class="btn primary" id="btnExplode" type="button">
+            <span>Trigger Effect</span>
+            <span class="arrow" aria-hidden="true"></span>
+          </button>
+          <button class="btn" id="btnFocus" type="button">
+            <span>Center View</span>
+            <span class="arrow" aria-hidden="true"></span>
+          </button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 id="features">Highlights</h2>
+        <div class="chips" aria-label="Feature chips">
+          <div class="chip">GPU-friendly particles</div>
+          <div class="chip">Parallax depth</div>
+          <div class="chip">Bloom-like glow</div>
+          <div class="chip">Responsive canvas</div>
+          <div class="chip">Accessible UI overlay</div>
+          <div class="chip">No frameworks needed</div>
+        </div>
+        <div class="hint">
+          Tip: Hover to bend space. Click <b>Trigger Effect</b> to burst the orb.
+        </div>
+      </aside>
+    </main>
+
+    <div class="footer" role="contentinfo">
+      <div class="pill">© <span id="year"></span> Nebula Forge</div>
+      <div class="pill" id="fps">Loading…</div>
+    </div>
+
+    <script type="module">
+      // Lightweight 3D without external build tools (Three.js via CDN)
+      import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+      const canvas = document.getElementById('stage');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
+      camera.position.set(0, 0.1, 6.6);
+
+      // Subtle fog for depth
+      scene.fog = new THREE.FogExp2(0x0b1530, 0.055);
+
+      // Lighting
+      const ambient = new THREE.AmbientLight(0x9bb7ff, 0.35);
+      scene.add(ambient);
+      const key = new THREE.DirectionalLight(0x7c3aed, 0.9);
+      key.position.set(3, 4, 2);
+      scene.add(key);
+      const rim = new THREE.DirectionalLight(0x22d3ee, 0.6);
+      rim.position.set(-5, -2, 6);
+      scene.add(rim);
+
+      // Background gradient planes (cheap)
+      const bgGeo = new THREE.PlaneGeometry(50, 50, 1, 1);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070a12,
+        transparent: true,
+        opacity: 0.0
+      });
+      const bg = new THREE.Mesh(bgGeo, bgMat);
+      bg.position.z = -30;
+      scene.add(bg);
+
+      // Central orb (glowing sphere)
+      const orbGroup = new THREE.Group();
+      scene.add(orbGroup);
+
+      const orbGeo = new THREE.SphereGeometry(1.25, 64, 64);
+      const orbMat = new THREE.MeshStandardMaterial({
+        color: 0x7c3aed,
+        emissive: 0x3b1d6e,
+        emissiveIntensity: 0.9,
+        metalness: 0.35,
+        roughness: 0.25
+      });
+      const orb = new THREE.Mesh(orbGeo, orbMat);
+      orbGroup.add(orb);
+
+      const haloGeo = new THREE.SphereGeometry(1.45, 48, 48);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: 0x22d3ee,
+        transparent: true,
+        opacity: 0.18
+      });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      orbGroup.add(halo);
+
+      // Particle ring system
+      const ringCount = 3;
+      const particlesPerRing = 900;
+      const rings = [];
+
+      const particleGeom = new THREE.BufferGeometry();
+      const positions = new Float32Array(particlesPerRing * 3);
+      const colors = new Float32Array(particlesPerRing * 3);
+
+      const colorA = new THREE.Color(0x7c3aed);
+      const colorB = new THREE.Color(0x22d3ee);
+
+      for (let r = 0; r < ringCount; r++) {
+        particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const mat = new THREE.PointsMaterial({
+          size: 0.045,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.85,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        const pts = new THREE.Points(particleGeom, mat);
+
+        // seed particles
+        for (let i = 0; i < particlesPerRing; i++) {
+          const idx = i * 3;
+          const t = i / particlesPerRing;
+          const radius = 2.1 + r * 0.55;
+          const angle = t * Math.PI * 2;
+
+          // Slightly non-planar distribution
+          const y = (Math.sin(angle * 2.0) * 0.55 + (Math.random() - 0.5) * 0.25) * (0.55 + r * 0.18);
+          const x = Math.cos(angle) * radius;
+          const z = Math.sin(angle) * radius;
+
+          positions[idx] = x;
+          positions[idx + 1] = y;
+          positions[idx + 2] = z;
+
+          const mix = (Math.sin(angle * 3.0 + r) * 0.5 + 0.5);
+          const c = colorA.clone().lerp(colorB, mix);
+          colors[idx] = c.r;
+          colors[idx + 1] = c.g;
+          colors[idx + 2] = c.b;
+        }
+        particleGeom.attributes.position.needsUpdate = true;
+        particleGeom.attributes.color.needsUpdate = true;
+
+        pts.rotation.x = Math.PI * 0.2 * r;
+        pts.rotation.y = Math.PI * 0.12 * r;
+        orbGroup.add(pts);
+        rings.push({ pts, radiusBase: 2.1 + r * 0.55, phase: Math.random() * 100 });
+      }
+
+      // Camera interaction targets
+      let targetRotX = 0;
+      let targetRotY = 0;
+      let currentRotX = 0;
+      let currentRotY = 0;
+
+      // Burst effect
+      let burst = 0; // 0..1
+      let burstVel = 0;
+
+      function onPointerMove(e) {
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = (e.clientY / window.innerHeight) * 2 - 1;
+        targetRotY = x * 0.65;
+        targetRotX = y * 0.4;
+      }
+
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+
+      // Resize
+      function resize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Buttons
+      const btnExplode = document.getElementById('btnExplode');
+      const btnFocus = document.getElementById('btnFocus');
+
+      btnExplode.addEventListener('click', () => {
+        burstVel = 1.35;
+      });
+
+      btnFocus.addEventListener('click', () => {
+        targetRotX = 0;
+        targetRotY = 0;
+      });
+
+      // FPS indicator
+      const fpsEl = document.getElementById('fps');
+      let last = performance.now();
+      let frames = 0;
+      let fps = 0;
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Smooth camera/orb rotation
+        currentRotX += (targetRotX - currentRotX) * 0.06;
+        currentRotY += (targetRotY - currentRotY) * 0.06;
+
+        orbGroup.rotation.x = currentRotX * 0.55;
+        orbGroup.rotation.y = currentRotY * 0.75;
+
+        // Continuous rotation
+        orbGroup.rotation.z = Math.sin(performance.now() * 0.0006) * 0.06;
+
+        // Burst physics
+        burstVel *= 0.92;
+        burst += burstVel * 0.02;
+        burst *= 0.98;
+        burst = Math.max(0, Math.min(1, burst));
+
+        // Particles warp
+        const now = performance.now() * 0.001;
+        orb.scale.setScalar(1 + burst * 0.06);
+        halo.material.opacity = 0.13 + burst * 0.22;
+        orbMat.emissiveIntensity = 0.75 + burst * 1.1;
+
+        for (let i = 0; i < rings.length; i++) {
+          const r = rings[i];
+          r.pts.rotation.y += 0.002 + i * 0.00055;
+          r.pts.rotation.x += 0.0012;
+          r.pts.position.y = Math.sin(now * 0.9 + r.phase) * 0.08 * (1 - burst * 0.25);
+
+          // Add a radial push during burst by scaling points container
+          const s = 1 + burst * (0.03 + i * 0.02);
+          r.pts.scale.setScalar(s);
+        }
+
+        // Subtle orbit for camera
+        camera.position.x = currentRotY * 1.0;
+        camera.position.y = currentRotX * -0.65;
+        camera.lookAt(0, 0, 0);
+
+        renderer.render(scene, camera);
+
+        // fps
+        frames++;
+        const t = performance.now();
+        if (t - last > 400) {
+          fps = Math.round((frames * 1000) / (t - last));
+          frames = 0;
+          last = t;
+          fpsEl.textContent = `FPS: ${fps} • Burst: ${Math.round(burst * 100)}%`;
+        }
+      }
+
+      document.getElementById('year').textContent = new Date().getFullYear();
+      animate();
+    </script>
+  </body>
+</html>
+
